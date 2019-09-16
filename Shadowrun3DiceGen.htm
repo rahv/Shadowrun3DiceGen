@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<body>
+<table><tr><td width=20>&nbsp</td><td>
+<h3>ShadowRun Dice Gen</h3>
+<form id="ShadowrunDiceGen">
+<table>
+<tr>
+<td>Number of dice:</td><td><input type="text" id="n_dice" name="DiceBox" size=3 maxlength=2></td>
+</tr>
+<tr>
+<td>Success Value:</td>
+<td>
+    <select name="success" id="success_val">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected="selected">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+    </select>
+</td>
+</tr>
+</table>
+</form>
+<br/>
+<button onclick="rollDice()">Roll</button>
+
+<p id="summary"></p>
+<p id="best"></p>
+<p id="die_results"></p>
+</td></tr></table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.3/lib/alea.min.js"></script>
+<script>
+var arng = new alea();
+
+function getRandomD6Value(i)
+{
+    var roll = Math.floor(arng() * 6 + 1);
+    //var roll = Math.floor(Math.random() * 6 + 1); //JS default random RNG
+    console.log("Die " + (i+1) + " rolls " + roll + ".");
+    return roll;
+}
+
+function formatText(current, success)
+{
+    var weight = (current < success) ? "normal" : "bold";
+    var colour = (current < success) ? "red" : "green";
+    return "<span style=\"font-weight:" + weight + ";color:" + colour + ";\">" + current + "</span>";
+}
+
+function keepRolling(i)
+{
+    var r = getRandomD6Value(i);
+    if (r == 6)
+        r = r + keepRolling(i);
+    return r + 6;
+}
+
+function rollDice()
+{
+    var n_dice = document.getElementById("ShadowrunDiceGen").elements[0].value;
+    var success_val = document.getElementById("ShadowrunDiceGen").elements[1].value;
+
+    var all_throws = "All throws:<br/><ul>";
+    var max_val = 0;
+    var n_succ = 0;
+    for (var i = 0; i < n_dice; i++)
+    {
+        var r = getRandomD6Value(i);
+        if (r == 6)
+            r = keepRolling(i);
+        if (r >= success_val)
+        {
+            if (r >= max_val)
+                max_val = r;
+            n_succ += 1;
+        }
+        r = formatText(r, success_val);
+        all_throws += "<li>Die " + (i+1) + " = " + r + "</li>";
+    }
+    all_throws += "</ul>";
+    document.getElementById("die_results").innerHTML = all_throws;
+
+    var die_text = (n_dice != 1) ? "dice" : "die";
+    var succ_text = (n_succ != 1) ? "successes" : "success";
+
+    document.getElementById("summary").innerHTML = "<strong>You've rolled " + n_succ + " " + succ_text + " with " + n_dice + " " + die_text + ".</strong><br/>";
+    document.getElementById("best").innerHTML = "<strong>Best result is " + max_val + ".</strong><br/>";
+    console.log("--------------");
+}
+</script>
+
+</body>
+</html>
